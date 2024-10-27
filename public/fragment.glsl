@@ -2,6 +2,16 @@ uniform float time;
 in vec2 pos;
 #define M_PI 3.1415926535897932384626433832795
 
+struct Circle {
+    vec2 pos;
+    float radius;
+};
+
+struct Slug {
+    Circle spine[1];
+};
+uniform Slug slugs[3];
+
 float circle( vec2 p, float r ) {
     return length(p) - r;
 }
@@ -12,7 +22,6 @@ float smin(float a, float b, float k) {
     float h = max( k-abs(a-b), 0.0 )/k;
     return min(a,b) - h*h*k*(1.0/4.0);
 }
-
 
 // this is really bad :(
 vec3 getColour(float d1, float d2, float d3) {
@@ -61,11 +70,14 @@ vec3 getColour(float d1, float d2, float d3) {
 }
 
 void main() {
-    float d1 = circle(pos, 0.5);
     float speed = 1.2;
-    float d2 = circle(pos - vec2(1.3* sin(speed*time), -0.2*cos(speed*5.0*time)), 0.2);
+
+    float d1 = circle(pos - slugs[0].spine[0].pos, slugs[0].spine[0].radius);
+    float d2 = circle(pos - slugs[1].spine[0].pos, slugs[1].spine[0].radius);
+    float d3 = circle(pos - slugs[2].spine[0].pos, slugs[2].spine[0].radius);
+    // float d2 = circle(pos - vec2(1.3* sin(speed*time), -0.2*cos(speed*5.0*time)), 0.2);
     // float d2 = circle(pos - vec2(0.9, 0.0), 0.2);
-    float d3 = circle(pos - vec2(0.0, -cos(speed*time)), 0.2);
+    // float d3 = circle(pos - vec2(0.0, -cos(speed*time)), 0.2);
     // float d3 = circle(pos-vec2(999.0, 999.0), 0.2);
 
     float k = 0.1;
