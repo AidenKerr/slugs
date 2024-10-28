@@ -14,7 +14,7 @@ async function setupShaders() {
     ]);
 }
 
-function setupScene(vertexShader, fragmentShader) {
+function setupScene(vertexShader, fragmentShader, slugs) {
     const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -41,26 +41,7 @@ function setupScene(vertexShader, fragmentShader) {
             time: { value: 1.0 },
             ratio: { value: window.innerWidth / window.innerHeight },
             slugs: {
-                value: [
-                    {
-                        spine: [
-                            { pos: new THREE.Vector2(0.0, 0.0), radius: 0.5 },
-                        ],
-                    },
-                    {
-                        spine: [
-                            { pos: new THREE.Vector2(0.75, 0.0), radius: 0.25 },
-                        ],
-                    },
-                    {
-                        spine: [
-                            {
-                                pos: new THREE.Vector2(-0.25, 0.8),
-                                radius: 0.25,
-                            },
-                        ],
-                    },
-                ],
+                value: slugs,
             },
         },
     });

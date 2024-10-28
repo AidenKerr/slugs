@@ -75,6 +75,7 @@ void main() {
     float d1 = circle(pos - slugs[0].spine[0].pos, slugs[0].spine[0].radius);
     float d2 = circle(pos - slugs[1].spine[0].pos, slugs[1].spine[0].radius);
     float d3 = circle(pos - slugs[2].spine[0].pos, slugs[2].spine[0].radius);
+
     // float d2 = circle(pos - vec2(1.3* sin(speed*time), -0.2*cos(speed*5.0*time)), 0.2);
     // float d2 = circle(pos - vec2(0.9, 0.0), 0.2);
     // float d3 = circle(pos - vec2(0.0, -cos(speed*time)), 0.2);
