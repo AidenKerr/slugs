@@ -7,10 +7,12 @@ struct Circle {
     float radius;
 };
 
+#define N_SLUGS 2
+#define N_SEGMENTS 3
 struct Slug {
-    Circle spine[1];
+    Circle spine[N_SEGMENTS];
 };
-uniform Slug slugs[3];
+uniform Slug slugs[N_SLUGS];
 
 float circle( vec2 p, float r ) {
     return length(p) - r;
@@ -69,23 +71,53 @@ vec3 getColour(float d1, float d2, float d3) {
     return c;
 }
 
+// returns (colour, dist)
+vec4 sdf() {
+
+    // super weird hard coded colour right now.... needs to be worked on...
+    float distances[3];
+
+    float min_dist = 99999.0; // TODO better max here...
+    float k = 0.1;
+    for (int i = 0; i < N_SLUGS; i++) {
+        for (int j = 0; j < N_SEGMENTS; j++) {
+            float d = circle(pos - slugs[i].spine[j].pos, slugs[i].spine[j].radius);
+            min_dist = smin(d, min_dist, k);
+
+            // super hacky temp, just to get it doing something....
+            if (i+j < 3) {
+                distances[i+j] = d;
+            }
+        }
+    }
+
+    vec3 colour = getColour(distances[0], distances[1], distances[2]);
+
+    return vec4(colour, min_dist);
+}
+
 void main() {
     float speed = 1.2;
 
-    float d1 = circle(pos - slugs[0].spine[0].pos, slugs[0].spine[0].radius);
-    float d2 = circle(pos - slugs[1].spine[0].pos, slugs[1].spine[0].radius);
-    float d3 = circle(pos - slugs[2].spine[0].pos, slugs[2].spine[0].radius);
+    // float d1 = circle(pos - slugs[0].spine[0].pos, slugs[0].spine[0].radius);
+    // float d2 = 1.0;//circle(pos - slugs[1].spine[0].pos, slugs[1].spine[0].radius);
+    // float d3 = 1.0;//circle(pos - slugs[2].spine[0].pos, slugs[2].spine[0].radius);
 
     // float d2 = circle(pos - vec2(1.3* sin(speed*time), -0.2*cos(speed*5.0*time)), 0.2);
     // float d2 = circle(pos - vec2(0.9, 0.0), 0.2);
     // float d3 = circle(pos - vec2(0.0, -cos(speed*time)), 0.2);
     // float d3 = circle(pos-vec2(999.0, 999.0), 0.2);
 
-    float k = 0.1;
-    float dist = smin(smin(d1, d2, k), d3, k);
+    // float k = 0.1;
+    // float dist = smin(smin(d1, d2, k), d3, k);
     // float dist = smin(circle(pos, 0.5), circle(pos - vec2(0.5* sin(time), -0.5*cos(5.0*time)), 0.2), 0.1);
     // float edge = clamp(9999.0 * dist * dist, 0.0, 1.0);
     // TODO I don't really need to use PI here...
+
+    vec4 sdf_result = sdf();
+    vec3 innerColour = sdf_result.rgb;
+    float dist = sdf_result.a;
+
     float edge = -cos(99.0 * M_PI * clamp(dist, -0.01, 0.01));
 
     // you can mess with this if you want to colour outside the lines
@@ -93,7 +125,6 @@ void main() {
 
     // colours
     vec3 borderColour = vec3(1.0);
-    vec3 innerColour = getColour(d1, d2, d3);
     vec3 colour = mix(innerColour, borderColour, mask);
     colour *= edge;
 
