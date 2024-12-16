@@ -7,8 +7,8 @@ struct Circle {
     float radius;
 };
 
-#define N_SLUGS 2
-#define N_SEGMENTS 3
+#define N_SLUGS 1
+#define N_SEGMENTS 5
 struct Slug {
     Circle spine[N_SEGMENTS];
 };
@@ -53,6 +53,7 @@ vec3 getColour(float d1, float d2, float d3) {
     // d3 = (d3 - minn) / (maxn - minn);
 
     // GAMMA CORRECTED
+    // do I even need to do this? eh
     float g = 2.2;
     vec3 c1 = vec3(pow(slugColour1.r, g),
                     pow(slugColour1.g, g),
@@ -72,17 +73,33 @@ vec3 getColour(float d1, float d2, float d3) {
 }
 
 // returns (colour, dist)
-vec4 sdf() {
+vec4 sdf( vec2 pos) {
 
     // super weird hard coded colour right now.... needs to be worked on...
     float distances[3];
 
     float min_dist = 99999.0; // TODO better max here...
-    float k = 0.1;
+    float k = 0.125;
+    bool eye = false;
     for (int i = 0; i < N_SLUGS; i++) {
         for (int j = 0; j < N_SEGMENTS; j++) {
+
             float d = circle(pos - slugs[i].spine[j].pos, slugs[i].spine[j].radius);
             min_dist = smin(d, min_dist, k);
+
+            // eyes
+            // TODO refactor
+            if (j == 0) {
+                vec2 neckDirection = slugs[i].spine[0].pos - slugs[i].spine[1].pos;
+
+                vec2 eyeOffset = 0.1 * normalize(vec2(neckDirection.y, -neckDirection.x));
+
+                float foo = circle(pos - slugs[i].spine[j].pos + eyeOffset, 0.02);
+                float bar = circle(pos - slugs[i].spine[j].pos - eyeOffset, 0.02);
+                if ( foo < 0.0 || bar < 0.0 ) {
+                    eye = true;
+                };
+            }
 
             // super hacky temp, just to get it doing something....
             if (i+j < 3) {
@@ -91,9 +108,25 @@ vec4 sdf() {
         }
     }
 
-    vec3 colour = getColour(distances[0], distances[1], distances[2]);
+    vec3 colour = eye ? vec3(0.0) : getColour(distances[0], distances[1], distances[2]);
 
     return vec4(colour, min_dist);
+}
+
+vec2 calcNormal( in vec2 p )
+{
+    const float eps = 0.0001;
+    const vec2 h = vec2(eps,0);
+    return normalize( vec2(sdf(p+h.xy).a - sdf(p-h.xy).a,
+                           sdf(p+h.yx).a - sdf(p-h.yx).a ) );
+}
+
+float strength( in vec2 p )
+{
+    const float eps = 0.0001;
+    const vec2 h = vec2(eps,0);
+    return length( vec2(sdf(p+h.xy).a - sdf(p-h.xy).a,
+                           sdf(p+h.yx).a - sdf(p-h.yx).a ) );
 }
 
 void main() {
@@ -114,19 +147,25 @@ void main() {
     // float edge = clamp(9999.0 * dist * dist, 0.0, 1.0);
     // TODO I don't really need to use PI here...
 
-    vec4 sdf_result = sdf();
+    vec4 sdf_result = sdf(pos);
     vec3 innerColour = sdf_result.rgb;
     float dist = sdf_result.a;
 
-    float edge = -cos(99.0 * M_PI * clamp(dist, -0.01, 0.01));
+    // TODO can i remove the division?
+    float s = 1.8 / (strength(pos) * 10000.0);
+
+    float edge = -cos(99.0 * M_PI * clamp(s * dist, -0.01, 0.01));
+    // float edge = -cos(99.0 * M_PI * s * dist);
 
     // you can mess with this if you want to colour outside the lines
-    float mask = step(0.0, dist);
+    float mask = step(0.00, dist);
 
     // colours
     vec3 borderColour = vec3(1.0);
+    // vec3 borderColour = vec3(strength(pos)*1000.);
     vec3 colour = mix(innerColour, borderColour, mask);
     colour *= edge;
 
     gl_FragColor = vec4(colour, 1.0);
+    // gl_FragColor = vec4(vec3((1.0+calcNormal(pos))/2.0,0.0), 1.0);
 }

@@ -53,9 +53,9 @@ function setupScene(vertexShader, fragmentShader, slugs) {
     return { renderer, material, scene, camera };
 }
 
-function updateSlugs(slugs) {
+function updateSlugs(slugs, mousePos) {
     for (let slug of slugs) {
-        slug.updateSpine();
+        slug.updateSpine(mousePos);
     }
 }
 
@@ -63,7 +63,7 @@ function updateUniforms(uniforms) {
     uniforms.time.value += 0.001;
 }
 
-export async function render(slugs) {
+export async function render(slugs, mousePos) {
     const [vertexShader, fragmentShader] = await setupShaders();
     const { renderer, material, scene, camera } = setupScene(
         vertexShader,
@@ -72,7 +72,7 @@ export async function render(slugs) {
     );
 
     function animate() {
-        updateSlugs(slugs);
+        updateSlugs(slugs, mousePos);
         updateUniforms(material.uniforms);
         renderer.render(scene, camera);
     }

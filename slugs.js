@@ -22,17 +22,19 @@ export class Slug {
 
     // eventually, this could be a list of radius and a direction
     // can build spine using fixed displacements
-    constructor(spine, destination) {
+    constructor(spine, followMouse = false) {
         this.spine = spine.map((v) => new circle(...v));
         // TODO initialize movement
         this.movement.start = this.spine[0].pos;
-        this.movement.destination = new Vector2(...destination);
+        this.findNewDestination();
         this.movement.midpoint = new Vector2()
             .addVectors(this.movement.start, this.movement.destination)
             .multiplyScalar(0.5);
+        this.followMouse = followMouse;
     }
 
     findNewDestination() {
+        // return;
         // TODO movement is strange and needs work
         // slugs often getting stuck
 
@@ -49,13 +51,40 @@ export class Slug {
             Math.random() * 2.0 - 1.0
         );
 
+        // let newDestination = new Vector2()
+        //     .copy(headPos)
+        //     .add(
+        //         new Vector2()
+        //             .copy(dir)
+        //             .multiplyScalar(0.4)
+        //             .multiply(new Vector2(Math.random(), Math.random()))
+        //     );
+
         const diff = new Vector2().subVectors(newDestination, headPos);
         const cosAngle = new Vector2().copy(diff).normalize().dot(dir);
 
-        console.log(diff.length());
+        // handle touching the wall
+        const testPoint = new Vector2()
+            .copy(headPos)
+            .add(new Vector2().copy(dir).multiplyScalar(0.1));
+        if (
+            testPoint.x > 1.0 ||
+            testPoint.x < -1.0 ||
+            testPoint.y > 1.0 ||
+            testPoint.y < -1.0
+        ) {
+            // TODO clean this up and also come up with better way to handle hitting the edge
+            // maybe I should make a more sophisticated movement system
+            // movment logic could be like
+            // 1) if outside of map, start to make moves to turn towards the center, and into the map
+            // 2) if in the map, pick a point in the area in front of you and move towards it
+            //    later, I can expand this to have it move towards specific areas like mouse position
 
-        if (cosAngle < 0.0) {
-            return;
+            console.log('out of bounds');
+
+            newDestination = new Vector2(0.0, 0.0)
+                .add(headPos)
+                .multiplyScalar(0.5);
         }
 
         this.movement.destination = newDestination;
@@ -72,32 +101,43 @@ export class Slug {
         this.movement.t = 0.0;
     }
 
-    updateSpine() {
-        if (this.movement.t === 1.0) {
-            this.findNewDestination();
-            return;
+    updateSpine(mousePos) {
+        if (this.followMouse) {
+            this.spine[0].pos.x = mousePos.x;
+            this.spine[0].pos.y = mousePos.y;
+        } else {
+            if (this.movement.t === 1.0) {
+                this.findNewDestination();
+                return;
+            }
+
+            // update t
+            this.movement.t += 0.005;
+            this.movement.t = Math.min(this.movement.t, 1.0);
+            const t = this.movement.t;
+
+            // lerp to destination position
+            const start = new Vector2().copy(this.movement.start);
+            const midpoint = new Vector2().copy(this.movement.midpoint);
+            const destination = new Vector2().copy(this.movement.destination);
+
+            // bezier movement
+            // const p0 = start.multiplyScalar(1 - t).add(midpoint.multiplyScalar(t));
+            // const p1 = midpoint
+            //     .multiplyScalar(1 - t)
+            //     .add(destination.multiplyScalar(t));
+            // this.spine[0].pos = p0.multiplyScalar(1 - t).add(p1.multiplyScalar(t));
+
+            // linear movement
+            this.spine[0].pos = start
+                .multiplyScalar(1 - t)
+                .add(destination.multiplyScalar(t));
         }
-
-        // update t
-        this.movement.t += 0.01;
-        this.movement.t = Math.min(this.movement.t, 1.0);
-        const t = this.movement.t;
-
-        // lerp to destination position
-        const start = new Vector2().copy(this.movement.start);
-        const midpoint = new Vector2().copy(this.movement.midpoint);
-        const destination = new Vector2().copy(this.movement.destination);
-
-        const p0 = start.multiplyScalar(1 - t).add(midpoint.multiplyScalar(t));
-        const p1 = midpoint
-            .multiplyScalar(1 - t)
-            .add(destination.multiplyScalar(t));
-        this.spine[0].pos = p0.multiplyScalar(1 - t).add(p1.multiplyScalar(t));
 
         // update next circles
 
         for (let i = 1; i < this.spine.length; i++) {
-            let separation = 0.35;
+            let separation = 0.25;
 
             let anchor = this.spine[i - 1].pos;
             let current = this.spine[i].pos;
