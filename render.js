@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Vector2 } from 'three';
 
 async function setupShaders() {
     const loader = new THREE.FileLoader();
@@ -53,17 +52,11 @@ function setupScene(vertexShader, fragmentShader, slugs) {
     return { renderer, material, scene, camera };
 }
 
-function updateSlugs(slugs, mousePos) {
-    for (let slug of slugs) {
-        slug.updateSpine(mousePos);
-    }
+function updateUniforms(uniforms, clock) {
+    uniforms.time.value = clock.getElapsedTime();
 }
 
-function updateUniforms(uniforms) {
-    uniforms.time.value += 0.001;
-}
-
-export async function render(slugs, mousePos) {
+export async function render(slugs, updateWorld, clock) {
     const [vertexShader, fragmentShader] = await setupShaders();
     const { renderer, material, scene, camera } = setupScene(
         vertexShader,
@@ -71,10 +64,12 @@ export async function render(slugs, mousePos) {
         slugs
     );
 
-    function animate() {
-        updateSlugs(slugs, mousePos);
-        updateUniforms(material.uniforms);
+    function update() {
+        updateWorld();
+        updateUniforms(material.uniforms, clock);
         renderer.render(scene, camera);
     }
-    renderer.setAnimationLoop(animate);
+
+    renderer.setAnimationLoop(update);
+    return;
 }
