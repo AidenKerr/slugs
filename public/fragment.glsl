@@ -7,7 +7,7 @@ struct Circle {
     float radius;
 };
 
-#define N_SLUGS 1
+#define N_SLUGS 2
 #define N_SEGMENTS 5
 struct Slug {
     Circle spine[N_SEGMENTS];
