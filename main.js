@@ -56,25 +56,34 @@ class World {
     };
 
     constructor() {
-        document.onmousemove = this.updateMouse;
+        document.onmousemove = (e) =>
+            this.updateMouse(e, {
+                x: e.pageX,
+                y: e.pageY,
+            });
+        document.addEventListener('touchmove', (e) =>
+            this.updateMouse(e, {
+                x: e.changedTouches[0].clientX,
+                y: e.changedTouches[0].clientY,
+            })
+        );
         let a = render(this.slugs, this.updateWorld, this.clock);
     }
 
     updateWorld = () => {
-        // update delta time
-        this.deltaTime = this.deltaClock.getDelta();
-
+        this.deltaTime = this.deltaClock.getDelta(); // update delta time
         for (let slug of this.slugs) {
             slug.movement.update(this.mousePos, this.deltaTime, this.clock);
         }
     };
 
-    updateMouse = (e) => {
+    updateMouse(e, pos) {
+        e.preventDefault();
         this.mousePos.x =
-            ((e.pageX / window.innerWidth) * 2 - 1) *
+            ((pos.x / window.innerWidth) * 2 - 1) *
             (window.innerWidth / window.innerHeight);
-        this.mousePos.y = -(e.pageY / window.innerHeight) * 2 + 1;
-    };
+        this.mousePos.y = -(pos.y / window.innerHeight) * 2 + 1;
+    }
 }
 
 // let there be light
