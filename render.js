@@ -71,5 +71,4 @@ export async function render(slugs, updateWorld, clock) {
     }
 
     renderer.setAnimationLoop(update);
-    return;
 }

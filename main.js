@@ -9,7 +9,7 @@ class World {
     deltaTime = 0.0;
 
     // number of slugs must be synced to N_SLUGS in fragment.glsl
-    // number of spine segements must be synced to N_SEGMENTS
+    // number of spine segments must be synced to N_SEGMENTS
     slugs = [
         new Slug(
             [

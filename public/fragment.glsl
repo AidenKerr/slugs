@@ -11,11 +11,24 @@ struct Circle {
 #define N_SEGMENTS 5
 struct Slug {
     Circle spine[N_SEGMENTS];
+    bool blinking;
 };
 uniform Slug slugs[N_SLUGS];
 
+// SDFs from Inigo Quilez's blog
+
 float circle( vec2 p, float r ) {
     return length(p) - r;
+}
+
+float sdOrientedBox( vec2 p, vec2 a, vec2 b, float th, float r )
+{
+    float l = length(b-a);
+    vec2  d = (b-a)/l;
+    vec2  q = (p-(a+b)*0.5);
+          q = mat2(d.x,-d.y,d.y,d.x)*q;
+          q = abs(q)-vec2(l,th)*0.5;
+    return length(max(q,0.0)) + min(max(q.x,q.y),0.0) - r;
 }
 
 float smin(float a, float b, float k) {
@@ -79,8 +92,8 @@ vec4 sdf( vec2 pos) {
     float distances[3];
 
     float min_dist = 99999.0; // TODO better max here...
-    float k = 0.125;
-    bool eye = false;
+    float k = 0.135;
+    float eyeMultiplier = 1.0;
     for (int i = 0; i < N_SLUGS; i++) {
         for (int j = 0; j < N_SEGMENTS; j++) {
 
@@ -93,12 +106,21 @@ vec4 sdf( vec2 pos) {
                 vec2 neckDirection = slugs[i].spine[0].pos - slugs[i].spine[1].pos;
 
                 vec2 eyeOffset = 0.1 * normalize(vec2(neckDirection.y, -neckDirection.x));
+                vec2 eyePos = pos - slugs[i].spine[j].pos;
 
-                float foo = circle(pos - slugs[i].spine[j].pos + eyeOffset, 0.02);
-                float bar = circle(pos - slugs[i].spine[j].pos - eyeOffset, 0.02);
-                if ( foo < 0.0 || bar < 0.0 ) {
-                    eye = true;
-                };
+                vec2 eyeDist;
+
+                if (slugs[i].blinking) {
+                    vec2 blinkDir = normalize(neckDirection) * 0.0001;
+                    eyeDist.x = sdOrientedBox(eyePos + eyeOffset, -blinkDir, blinkDir, 0.03, 0.01);
+                    eyeDist.y = sdOrientedBox(eyePos - eyeOffset, -blinkDir, blinkDir, 0.03, 0.01);
+                } else {
+                    eyeDist.x = circle(eyePos + eyeOffset, 0.02);
+                    eyeDist.y = circle(eyePos - eyeOffset, 0.02);
+                }
+
+                eyeDist = (eyeDist+0.005)*200.;
+                eyeMultiplier = min(eyeMultiplier, min(eyeDist.x, eyeDist.y));
             }
 
             // super hacky temp, just to get it doing something....
@@ -108,7 +130,7 @@ vec4 sdf( vec2 pos) {
         }
     }
 
-    vec3 colour = eye ? vec3(0.0) : getColour(distances[0], distances[1], distances[2]);
+    vec3 colour = getColour(distances[0], distances[1], distances[2]) * eyeMultiplier;
 
     return vec4(colour, min_dist);
 }
