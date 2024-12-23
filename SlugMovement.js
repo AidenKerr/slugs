@@ -29,7 +29,11 @@ export class SlugMovement {
             this.slug.spine[1].pos
         );
 
-        if (this.state == SlugMovement.STATES.MOUSE_CONTROLLED) return;
+        if (
+            this.state == SlugMovement.STATES.MOUSE_CONTROLLED ||
+            this.state == SlugMovement.STATES.MOUSE_INSTANT
+        )
+            return;
         // timeout for state change (this can be refactored to be events based, maybe?)
         // TODO if refactored to add events, be sure to cancel any timeouts
         const min = 3000;
