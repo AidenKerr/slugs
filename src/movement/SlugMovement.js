@@ -24,6 +24,8 @@ export class SlugMovement {
 
         this.destination = null;
         this.state = newState;
+        // TODO note for refactoring. This is potentially misleading.
+        // it is not the current neck but rather the neck when state was changed.
         this.neck = new Vector2().subVectors(
             this.slug.spine[0].pos,
             this.slug.spine[1].pos
