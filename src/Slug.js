@@ -1,5 +1,7 @@
 import { Vector2 } from 'three';
-import { SlugMovement } from './SlugMovement';
+import { SlugMovement } from './movement/SlugMovement';
+import { MouseMovement } from './movement/MouseMovement';
+import { ScanMovement } from './movement/ScanMovement';
 
 class circle {
     constructor(pos, radius) {
@@ -11,22 +13,25 @@ class circle {
 export class Slug {
     constructor(spine, followMouse = false) {
         this.spine = spine.map((v) => new circle(...v));
+        this.head = this.spine[0];
         this.blinking = true;
         this.handleBlink();
 
+        const speed = 0.3;
         this.movement = new SlugMovement(
             this,
-            0.3,
+            speed,
             followMouse
-                ? SlugMovement.STATES.MOUSE_CONTROLLED
-                : SlugMovement.STATES.SCAN
+                ? new MouseMovement(this, speed)
+                : new ScanMovement(this, speed)
         );
     }
 
     handleBlink() {
         this.blinking = !this.blinking;
         if (this.blinking) {
-            setTimeout(() => this.handleBlink(), 150);
+            const blinkTime = 150;
+            setTimeout(() => this.handleBlink(), blinkTime);
         } else {
             const min = 2000;
             const max = 10000;

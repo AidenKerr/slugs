@@ -61,40 +61,17 @@ class World {
         // ]),
     ];
 
-    mousePos = {
-        x: 0,
-        y: 0,
-    };
-
     constructor() {
-        document.onmousemove = (e) =>
-            this.updateMouse(e, {
-                x: e.pageX,
-                y: e.pageY,
-            });
-        document.addEventListener('touchmove', (e) =>
-            this.updateMouse(e, {
-                x: e.changedTouches[0].clientX,
-                y: e.changedTouches[0].clientY,
-            })
-        );
-        let a = render(this.slugs, this.updateWorld, this.clock);
+        render(this.slugs, this.updateWorld, this.clock);
     }
 
     updateWorld = () => {
+        // TODO fix deltaTime spike when leaving + returning to window
         this.deltaTime = this.deltaClock.getDelta(); // update delta time
         for (let slug of this.slugs) {
-            slug.movement.update(this.mousePos, this.deltaTime, this.clock);
+            slug.movement.update(this.deltaTime, this.clock);
         }
     };
-
-    updateMouse(e, pos) {
-        e.preventDefault();
-        this.mousePos.x =
-            ((pos.x / window.innerWidth) * 2 - 1) *
-            (window.innerWidth / window.innerHeight);
-        this.mousePos.y = -(pos.y / window.innerHeight) * 2 + 1;
-    }
 }
 
 // let there be light
