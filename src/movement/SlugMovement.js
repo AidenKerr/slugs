@@ -5,12 +5,6 @@ import { ScanMovement } from './ScanMovement';
 
 export class SlugMovement {
     // TODO implement: I noticed that by picking destinations to the front left/right you get a crawling motion. its fun. Not the crawl currently implemented
-    static STATES = {
-        MOUSE_CONTROLLED: 'mouse_controlled',
-        MOUSE_INSTANT: 'mouse_instant',
-        SCAN: 'scan',
-        CRAWL: 'crawl',
-    };
 
     constructor(slug, speed, strategy) {
         this.slug = slug;
@@ -49,32 +43,21 @@ export class SlugMovement {
     }
 
     update(deltaTime, clock) {
-        const movement = this.strategy.update(deltaTime, clock);
+        // the movement strategy will tell me if we need to pick a new state
+        const updateState = this.strategy.update(deltaTime, clock);
+        this.updateSpine();
 
         // this is just a direction to pick a new random state.
         // Not the best solution to this problem (TODO)
         // maybe can be improved when we add events-based strategy changes?
-        if (movement === 'RANDOM_STATE') {
+        if (updateState) {
             this.changeStrategy(this.pickRandomStrategy());
-            return;
-        }
-
-        this.moveHead(...movement);
-        this.updateSpine();
-    }
-
-    moveHead(vec, overwrite = false) {
-        if (overwrite) {
-            this.slug.head.pos = vec;
-        } else {
-            this.slug.head.pos.add(vec);
         }
     }
 
     updateSpine() {
         for (let i = 1; i < this.slug.spine.length; i++) {
             let separation = 0.25;
-
             let anchor = this.slug.spine[i - 1].pos;
             let current = this.slug.spine[i].pos;
             let diff = new Vector2()

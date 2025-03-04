@@ -34,22 +34,23 @@ export class MouseMovement {
 
     update(deltaTime, clock) {
         if (this.speed === 'INSTANT') {
-            return this.handleInstantMovement();
+            this.slug.head.pos = this.handleInstantMovement();
         }
-        return this.handleSlowMovement(deltaTime);
+        this.slug.head.pos.add(this.handleSlowMovement(deltaTime));
+        return false;
     }
 
     handleInstantMovement() {
-        return [new Vector2(...Object.values(this.mousePos)), true];
+        return new Vector2(...Object.values(this.mousePos));
     }
 
     handleSlowMovement(deltaTime) {
         let destination = new Vector2(...Object.values(this.mousePos));
         let diff = new Vector2().subVectors(destination, this.slug.head.pos);
         if (diff.length() < 0.01) {
-            return [new Vector2(0, 0)];
+            return new Vector2(0, 0);
         }
 
-        return [diff.normalize().multiplyScalar(this.speed * deltaTime)];
+        return diff.normalize().multiplyScalar(this.speed * deltaTime);
     }
 }

@@ -21,10 +21,13 @@ export class CrawlMovement {
         );
 
         if (diff.length() < 0.01) {
-            return 'RANDOM_STATE';
+            return true;
         }
 
-        return [diff.normalize().multiplyScalar(this.speed * deltaTime)];
+        this.slug.head.pos.add(
+            diff.normalize().multiplyScalar(this.speed * deltaTime)
+        );
+        return false;
     }
 
     pickFovDestination() {

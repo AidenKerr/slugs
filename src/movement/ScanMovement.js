@@ -27,6 +27,7 @@ export class ScanMovement {
         // let scanFunc = Math.min((t - 2.0) % p, p - ((t - 2.0) % p)) - 1.0;
 
         orth.multiplyScalar(scanFunc);
-        return [orth.multiplyScalar(this.speed * deltaTime)];
+        this.slug.head.pos.add(orth.multiplyScalar(this.speed * deltaTime));
+        return false;
     }
 }
