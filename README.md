@@ -2,6 +2,8 @@
 
 made with signed distance functions
 
+[try it](https://slugs.onrender.com/)
+
 <img src="https://github.com/user-attachments/assets/2b4de60b-831d-484e-b9a3-38dd061cb2b0" width="250">
 
 they are colourful
