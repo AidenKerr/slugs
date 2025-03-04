@@ -70,7 +70,6 @@ class World {
     }
 
     updateWorld = () => {
-        // TODO fix deltaTime spike when leaving + returning to window
         this.deltaTime = this.deltaClock.getDelta(); // update delta time
         for (let slug of this.slugs) {
             slug.movement.update(this.deltaTime, this.clock);
