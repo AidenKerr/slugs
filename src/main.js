@@ -65,7 +65,7 @@ class World {
         render(this.slugs, this.updateWorld, this.clock);
 
         document.addEventListener('visibilitychange', () => {
-            this.deltaClock.getDelta(); // throwaway deltaTime when visibility changes
+            this.deltaClock.getDelta(); // throw away deltaTime when visibility changes
         });
     }
 

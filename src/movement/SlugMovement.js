@@ -36,10 +36,12 @@ export class SlugMovement {
     }
 
     pickRandomStrategy() {
-        // TODO make random
-        return this.strategy instanceof CrawlMovement
-            ? new ScanMovement(this.slug, this.speed)
-            : new CrawlMovement(this.slug, this.speed);
+        // pick a random strategy from list
+        const strategies = [ScanMovement, CrawlMovement];
+        const newStrategy =
+            strategies[Math.floor(Math.random() * strategies.length)];
+
+        return new newStrategy(this.slug, this.speed);
     }
 
     update(deltaTime, clock) {
@@ -47,9 +49,7 @@ export class SlugMovement {
         const updateState = this.strategy.update(deltaTime, clock);
         this.updateSpine();
 
-        // this is just a direction to pick a new random state.
-        // Not the best solution to this problem (TODO)
-        // maybe can be improved when we add events-based strategy changes?
+        // TODO maybe can be improved when we add events-based strategy changes?
         if (updateState) {
             this.changeStrategy(this.pickRandomStrategy());
         }
