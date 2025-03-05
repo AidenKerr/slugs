@@ -10,7 +10,7 @@ export class CrawlMovement {
         );
     }
 
-    update(deltaTime, clock, changeState) {
+    update(deltaTime, clock) {
         if (this.destination == null) {
             this.pickFovDestination();
         }

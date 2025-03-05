@@ -20,6 +20,8 @@ export class SlugMovement {
 
         this.strategy = strategy;
 
+        return;
+
         if (strategy instanceof MouseMovement) return;
 
         // timeout for state change (this can be refactored to be events based, maybe?)

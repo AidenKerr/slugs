@@ -2,6 +2,7 @@ import { Vector2 } from 'three';
 import { SlugMovement } from './movement/SlugMovement';
 import { MouseMovement } from './movement/MouseMovement';
 import { ScanMovement } from './movement/ScanMovement';
+import { TurnMovement } from './movement/TurnMovement';
 
 class circle {
     constructor(pos, radius) {
@@ -23,7 +24,7 @@ export class Slug {
             speed,
             followMouse
                 ? new MouseMovement(this, speed)
-                : new ScanMovement(this, speed)
+                : new TurnMovement(this, speed)
         );
     }
 
